@@ -1,17 +1,35 @@
 import React, { Component } from 'react';
 import './App.css';
-import {getOrders} from '../../apiCalls';
+import { getOrders } from '../../apiCalls';
 import Orders from '../../components/Orders/Orders';
 import OrderForm from '../../components/OrderForm/OrderForm';
+import { postOrders } from '../../apiCalls.js'
 
 class App extends Component {
   constructor(props) {
     super();
+    this.state = {
+      orders: [],
+    }
   }
 
-  componentDidMount() {
-    getOrders()
-      .catch(err => console.error('Error fetching:', err));
+  componentDidMount = async () => {
+    try {
+      const orders = await getOrders()
+      console.log('your state', orders.orders)
+      this.setState({ orders: orders.orders })
+    } catch(error) {
+      console.error('Error fetching:', error)
+    }
+  }
+  
+  postUserOrder = async (name, ingredients) => {
+    if (name === '' || ingredients === []) {
+      return false
+    } else {
+      await postOrders(this.state.name, this.state.ingredients)
+        .then(data => this.setState({ orders: [...this.state.orders, data ]}))
+    }
   }
 
   render() {
@@ -22,7 +40,7 @@ class App extends Component {
           <OrderForm />
         </header>
 
-        <Orders orders={this.state.orders}/>
+        <Orders postOrder={this.postUserOrder} orders={this.state.orders}/>
       </main>
     );
   }
